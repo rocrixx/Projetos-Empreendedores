@@ -692,7 +692,7 @@
 
   /* FORM */
   .form-wrapper {
-    max-width: 500px;
+    max-width: 620px;
     margin: 0 auto;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1145,6 +1145,8 @@
       <p>Nossa equipe entrará em contato em breve. Verifique seu e-mail corporativo.</p>
     </div>
   </div>
+
+  <iframe name="hidden-iframe" style="display:none;"></iframe>
 </section>
 
 <footer>
@@ -1154,34 +1156,58 @@
 </footer>
 
 <script>
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
-      }
-    });
-  }, { threshold: 0.1 });
+  const FORM_ACTION   = 'https://docs.google.com/forms/d/e/1FAIpQLScn37qV8V4zYPXKP5G_t1usc-8QBhZpp3wq7psP4N6teS4iyw/formResponse';
+  const ENTRY_NOME    = 'entry.982790392';
+  const ENTRY_EMAIL   = 'entry.1859042971';
+  const ENTRY_EMPRESA = 'entry.940700599';
+  const ENTRY_SEG     = 'entry.559467394';
 
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
   document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 
   function handleSubmit() {
-    const nome = document.getElementById('nome').value;
-    const email = document.getElementById('email').value;
-    const empresa = document.getElementById('empresa').value;
+    const nome    = document.getElementById('nome').value.trim();
+    const email   = document.getElementById('email').value.trim();
+    const empresa = document.getElementById('empresa').value.trim();
     const segmento = document.getElementById('segmento').value;
 
     if (!nome || !email || !empresa || !segmento) {
       alert('Por favor, preencha todos os campos.');
       return;
     }
-
     if (!email.includes('@') || !email.includes('.')) {
       alert('Por favor, informe um e-mail válido.');
       return;
     }
 
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = FORM_ACTION;
+    form.target = 'hidden-iframe';
+
+    const campos = [
+      [ENTRY_NOME,    nome],
+      [ENTRY_EMAIL,   email],
+      [ENTRY_EMPRESA, empresa],
+      [ENTRY_SEG,     segmento],
+    ];
+
+    campos.forEach(([name, value]) => {
+      const input = document.createElement('input');
+      input.type  = 'hidden';
+      input.name  = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+
     document.getElementById('form-content').style.display = 'none';
-    document.getElementById('success-msg').style.display = 'block';
+    document.getElementById('success-msg').style.display  = 'block';
   }
 
   document.querySelectorAll('a[href^="#"]').forEach(link => {
